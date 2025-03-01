@@ -16,6 +16,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+#include <numeric>
+#include <random>
 
 #include "AuctionHouseMgr.h"
 #include "Common.h"
@@ -619,19 +621,19 @@ void AHBConfig::SetMinItems(uint32 value)
 
 void AHBConfig::SetItemPriceOverride()
 {
-    itemsResults = WorldDatabase.Query("SELECT item, avgPrice, minPrice FROM mod_auctionhousebot_priceOverride");
+    QueryResult results = WorldDatabase.Query("SELECT item, avgPrice, minPrice FROM mod_auctionhousebot_priceOverride");
 
-    if (itemsResults)
+    if (results)
     {
         do
         {
             const Field* fields = results->Fetch();
             itemPriceOverride.emplace(fields[0].Get<uint32>(), std::pair{ fields[1].Get<uint32>() , fields[2].Get<uint32>() });
-        } while (itemsResults->NextRow());
+        } while (results->NextRow());
     }
 }
 
-std::optional<uint32> AuctionHouseIndex::GetOverridenPrice(uint32 itemId, std::mt19937& rng)
+uint32 AHBConfig::GetOverridenPrice(uint32 itemId, std::mt19937& rng)
 {
     const auto foundOverride = itemPriceOverride.find(itemId);
 
@@ -652,7 +654,7 @@ std::optional<uint32> AuctionHouseIndex::GetOverridenPrice(uint32 itemId, std::m
         float randVal = x(rng);
         return std::max(randVal, minPriceF); // Never fall below minPrice, we cannot deal with negative numbers, which sometimes can happen
     }
-    return std::nullopt;
+    return 1;
 }
 
 

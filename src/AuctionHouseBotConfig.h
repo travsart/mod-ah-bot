@@ -23,6 +23,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <random>
 
 #include "ObjectMgr.h"
 
@@ -363,12 +364,13 @@ public:
     void   UpdateItemStats   (uint32 id, uint32 stackSize, uint64 buyout);
     uint64 GetItemPrice      (uint32 id);
 
-    const std::unordered_map<uint32, std::pair<uint32, uint32>>& GetPriceOverrides() const
+    const std::map<uint32, std::pair<uint32, uint32>>& GetPriceOverrides() const
     {
         return itemPriceOverride;
     }
 
-    std::optional<uint32> GetOverridenPrice(uint32 itemId, std::mt19937& rng);
+    void SetItemPriceOverride();
+    uint32 GetOverridenPrice(uint32 itemId, std::mt19937& rng);
 };
 
 //

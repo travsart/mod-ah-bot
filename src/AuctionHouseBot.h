@@ -47,6 +47,8 @@ private:
     time_t     _lastrun_h_sec;
     time_t     _lastrun_n_sec;
 
+    std::map<uint32, std::pair<uint32, uint32>> itemPriceOverride;
+
     //
     // Main operations
     //
