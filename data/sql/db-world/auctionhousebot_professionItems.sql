@@ -25,7 +25,7 @@ SET time_zone = "+00:00";
 --
 -- Table structure for table `auctionhousebot_professionItems`
 --
-
+DROP TABLE IF EXISTS `auctionhousebot_professionItems`;
 CREATE TABLE `auctionhousebot_professionItems` (
   `Entry` int NOT NULL,
   `Item` int NOT NULL
