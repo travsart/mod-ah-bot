@@ -859,13 +859,18 @@ void AuctionHouseBot::Sell(Player* AHBplayer, AHBConfig* config)
                     buyoutPrice = prototype->BuyPrice;
                 }
                 else {
-                    buyoutPrice = config->GetOverridenPrice(itemID, )
+                    buyoutPrice = config->GetOverridenPrice(itemID, rng);
                 }
                 
             }
             else
             {
-                buyoutPrice = prototype->SellPrice;
+                if(prototype->BuyPrice > 0){
+                    buyoutPrice = prototype->SellPrice;
+                }
+                else {
+                    buyoutPrice = config->GetOverridenPrice(itemID, rng);
+                }
             }
         }
 
