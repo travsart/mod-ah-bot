@@ -512,6 +512,8 @@ void AuctionHouseBot::Buy(Player* AHBplayer, AHBConfig* config, WorldSession* se
     }
 }
 
+
+std::mt19937 rng{ std::random_device{}() };
 // =============================================================================
 // This routine performs the selling operations for the bot
 // =============================================================================
@@ -853,7 +855,13 @@ void AuctionHouseBot::Sell(Player* AHBplayer, AHBConfig* config)
         {
             if (config->UseBuyPriceForSeller)
             {
-                buyoutPrice = prototype->BuyPrice;
+                if(prototype->BuyPrice > 0){
+                    buyoutPrice = prototype->BuyPrice;
+                }
+                else {
+                    buyoutPrice = config->GetOverridenPrice(itemID, )
+                }
+                
             }
             else
             {

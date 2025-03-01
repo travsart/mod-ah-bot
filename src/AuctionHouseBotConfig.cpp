@@ -599,6 +599,7 @@ void AHBConfig::Reset()
     itemsCount.clear();
     itemsSum.clear();
     itemsPrice.clear();
+    itemPriceOverride.clear();
 }
 
 uint32 AHBConfig::GetAHID()
@@ -615,6 +616,45 @@ void AHBConfig::SetMinItems(uint32 value)
 {
     minItems = value;
 }
+
+void AHBConfig::SetItemPriceOverride()
+{
+    itemsResults = WorldDatabase.Query("SELECT item, avgPrice, minPrice FROM mod_auctionhousebot_priceOverride");
+
+    if (itemsResults)
+    {
+        do
+        {
+            const Field* fields = results->Fetch();
+            itemPriceOverride.emplace(fields[0].Get<uint32>(), std::pair{ fields[1].Get<uint32>() , fields[2].Get<uint32>() });
+        } while (itemsResults->NextRow());
+    }
+}
+
+std::optional<uint32> AuctionHouseIndex::GetOverridenPrice(uint32 itemId, std::mt19937& rng)
+{
+    const auto foundOverride = itemPriceOverride.find(itemId);
+
+    if (foundOverride != itemPriceOverride.end())
+    {
+        auto [meanPrice, minPrice] = foundOverride->second;
+
+        if (minPrice > meanPrice)
+        {
+            LOG_WARN("module.ahbot", "Price override has higher min price than mean for item {}", itemId);
+            minPrice = meanPrice * 0.8;
+        }
+
+        float meanPriceF = meanPrice;
+        float minPriceF = minPrice;
+        float stdDev = std::max(1.f, meanPriceF - minPriceF) * 0.2f; // results will be about mean-3*stddev and mean+3*stddev
+        std::normal_distribution<float> x(meanPriceF, stdDev);
+        float randVal = x(rng);
+        return std::max(randVal, minPriceF); // Never fall below minPrice, we cannot deal with negative numbers, which sometimes can happen
+    }
+    return std::nullopt;
+}
+
 
 uint32 AHBConfig::GetMinItems()
 {
@@ -2172,6 +2212,7 @@ void AHBConfig::InitializeFromSql(std::set<uint32> botsIds)
 
     SetMinItems(WorldDatabase.Query("SELECT minitems FROM mod_auctionhousebot WHERE auctionhouse = {}", GetAHID())->Fetch()->Get<uint32>());
     SetMaxItems(WorldDatabase.Query("SELECT maxitems FROM mod_auctionhousebot WHERE auctionhouse = {}", GetAHID())->Fetch()->Get<uint32>());
+    SetItemPriceOverride();
 
     //
     // Load percentages
@@ -2652,29 +2693,32 @@ void AHBConfig::InitializeBins()
         // Exclude items with no possible price
         //
 
-        if (UseBuyPriceForSeller)
-        {
-            if (itr->second.BuyPrice == 0)
-            {
-                continue;
-            }
-        }
-        else
-        {
-            if (itr->second.SellPrice == 0)
-            {
-                continue;
-            }
-        }
+        // if (UseBuyPriceForSeller)
+        // {
+        //     if (itr->second.BuyPrice == 0)
+        //     {
+        //         continue;
+        //     }
+        // }
+        // else
+        // {
+        //     if (itr->second.SellPrice == 0)
+        //     {
+        //         // TODO HERE
+        //         continue;
+        //     }
+        // }
 
         //
         // Exclude items with no costs associated, in any case
         //
 
-        if ((itr->second.BuyPrice == 0) && (itr->second.SellPrice == 0))
-        {
-            continue;
-        }
+        // TODO HERE
+
+        // if ((itr->second.BuyPrice == 0) && (itr->second.SellPrice == 0))
+        // {
+        //     continue;
+        // }
 
         //
         // Exlude items superior to the limit quality
