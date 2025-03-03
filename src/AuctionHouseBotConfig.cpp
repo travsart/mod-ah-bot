@@ -632,7 +632,11 @@ void AHBConfig::SetItemPriceOverride()
             uint32 avgPrice = fields[1].Get<uint32>();
             uint32 minPrice = fields[2].Get<uint32>();
             itemPriceOverride.emplace(itemId, std::pair{ avgPrice , minPrice });
-            LOG_WARN("module.ahbot", "Loading item from override id {}, avgPrice {}, minPrice {}", itemId, avgPrice , minPrice);
+            if (DebugOutConfig)
+            {
+                LOG_INFO("module.ahbot", "Loading item from override id {}, avgPrice {}, minPrice {}", itemId, avgPrice , minPrice);
+            }
+            
         } while (results->NextRow());
     }
 }
@@ -657,6 +661,9 @@ uint32 AHBConfig::GetOverridenPrice(uint32 itemId, std::mt19937& rng)
         std::normal_distribution<float> x(meanPriceF, stdDev);
         float randVal = x(rng);
         return std::max(randVal, minPriceF); // Never fall below minPrice, we cannot deal with negative numbers, which sometimes can happen
+    }
+    else{
+        LOG_WARN("module.ahbot", "Did not find item {}", itemId);
     }
     
     return 1 * 100 * 100;
