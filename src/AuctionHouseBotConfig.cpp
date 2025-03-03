@@ -602,7 +602,6 @@ void AHBConfig::Reset()
     itemsSum.clear();
     itemsPrice.clear();
     itemPriceOverride.clear();
-    SetItemPriceOverride();
 }
 
 uint32 AHBConfig::GetAHID()
