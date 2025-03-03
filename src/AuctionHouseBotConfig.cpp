@@ -602,6 +602,7 @@ void AHBConfig::Reset()
     itemsSum.clear();
     itemsPrice.clear();
     itemPriceOverride.clear();
+    SetItemPriceOverride();
 }
 
 uint32 AHBConfig::GetAHID()
@@ -628,7 +629,11 @@ void AHBConfig::SetItemPriceOverride()
         do
         {
             const Field* fields = results->Fetch();
-            itemPriceOverride.emplace(fields[0].Get<uint32>(), std::pair{ fields[1].Get<uint32>() , fields[2].Get<uint32>() });
+            uint32 itemId = fields[0].Get<uint32>();
+            uint32 avgPrice = fields[1].Get<uint32>();
+            uint32 minPrice = fields[2].Get<uint32>();
+            itemPriceOverride.emplace(itemId, std::pair{ avgPrice , minPrice });
+            LOG_WARN("module.ahbot", "Loading item from override id {}, avgPrice {}, minPrice {}", itemId, avgPrice , minPrice);
         } while (results->NextRow());
     }
 }
@@ -654,7 +659,8 @@ uint32 AHBConfig::GetOverridenPrice(uint32 itemId, std::mt19937& rng)
         float randVal = x(rng);
         return std::max(randVal, minPriceF); // Never fall below minPrice, we cannot deal with negative numbers, which sometimes can happen
     }
-    return 1;
+    
+    return 1 * 100 * 100;
 }
 
 
@@ -2093,6 +2099,7 @@ void AHBConfig::Initialize(std::set<uint32> botsIds)
     InitializeFromFile();
     InitializeFromSql(botsIds);
     InitializeBins();
+    SetItemPriceOverride();
 }
 
 void AHBConfig::InitializeFromFile()
@@ -2214,7 +2221,6 @@ void AHBConfig::InitializeFromSql(std::set<uint32> botsIds)
 
     SetMinItems(WorldDatabase.Query("SELECT minitems FROM mod_auctionhousebot WHERE auctionhouse = {}", GetAHID())->Fetch()->Get<uint32>());
     SetMaxItems(WorldDatabase.Query("SELECT maxitems FROM mod_auctionhousebot WHERE auctionhouse = {}", GetAHID())->Fetch()->Get<uint32>());
-    SetItemPriceOverride();
 
     //
     // Load percentages

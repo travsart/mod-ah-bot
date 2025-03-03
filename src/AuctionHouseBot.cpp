@@ -852,11 +852,11 @@ void AuctionHouseBot::Sell(Player* AHBplayer, AHBConfig* config)
             buyoutPrice = config->GetItemPrice(itemID);
         }
 
-        if (buyoutPrice == 0)
+        if (buyoutPrice == 0 || buyoutPrice < 10)
         {
             if (config->UseBuyPriceForSeller)
             {
-                if(prototype->BuyPrice > 0){
+                if(prototype->BuyPrice > 10){
                     buyoutPrice = prototype->BuyPrice;
                 }
                 else {
@@ -866,7 +866,7 @@ void AuctionHouseBot::Sell(Player* AHBplayer, AHBConfig* config)
             }
             else
             {
-                if(prototype->BuyPrice > 0){
+                if(prototype->SellPrice > 10){
                     buyoutPrice = prototype->SellPrice;
                 }
                 else {
