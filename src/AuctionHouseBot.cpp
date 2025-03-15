@@ -57,7 +57,7 @@ AuctionHouseBot::~AuctionHouseBot()
 {
 }
 
-uint64 AuctionHouseBot::u64Random(uint64 min, uint64 max){
+uint64 AuctionHouseBot::u64Random(uint64 min, uint64 max) {
     std::uniform_int_distribution<uint64> uid(min, max);
     return uid(gen);
 }
@@ -209,7 +209,7 @@ void AuctionHouseBot::calculateItemValue(ItemTemplate const* itemProto, uint64& 
     }
 
     // Grab the minimum prices
-    uint64 PriceMinimumCenterBase = urand(itemProto->ItemLevel, itemProto->ItemLevel + 10) * 10;
+    uint64 PriceMinimumCenterBase = u64Random(itemProto->ItemLevel, itemProto->ItemLevel + 10) * 10;
     auto it = PriceMinimumCenterBaseOverridesByItemID.find(itemProto->ItemId);
     if (it != PriceMinimumCenterBaseOverridesByItemID.end()) {
         PriceMinimumCenterBase = it->second;
@@ -238,10 +238,12 @@ void AuctionHouseBot::calculateItemValue(ItemTemplate const* itemProto, uint64& 
     }
 
     // Set the minimum price
-    if (outBuyoutPrice < PriceMinimumCenterBase)
-        outBuyoutPrice = urand(PriceMinimumCenterBase * 0.75, PriceMinimumCenterBase * 1.25);
-    else
-        outBuyoutPrice = urand(outBuyoutPrice * 0.75, outBuyoutPrice * 1.25);
+    if (outBuyoutPrice < PriceMinimumCenterBase) {
+        outBuyoutPrice = u64Random(PriceMinimumCenterBase * 0.75, PriceMinimumCenterBase * 1.25);
+    }
+    else {
+        outBuyoutPrice = u64Random(outBuyoutPrice * 0.75, outBuyoutPrice * 1.25);
+    }
 
     // Multiply the price based on multipliers
     outBuyoutPrice *= qualityPriceMultplier;
@@ -260,18 +262,18 @@ void AuctionHouseBot::calculateItemValue(ItemTemplate const* itemProto, uint64& 
         LOG_INFO("module", "Item={} Min={}, Max={}", itemProto->ItemId, min, max);
     }
 
-    outBuyoutPrice = urand(min, max);
+    outBuyoutPrice = u64Random(min, max);
 
     // Calculate a bid price based on a variance against buyout price
     float sellVarianceBidPriceTopPercent = 1;
     float sellVarianceBidPriceBottomPercent = .75;
-    outBidPrice = urand(sellVarianceBidPriceBottomPercent * outBuyoutPrice, sellVarianceBidPriceTopPercent * outBuyoutPrice);
+    outBidPrice = u64Random(sellVarianceBidPriceBottomPercent * outBuyoutPrice, sellVarianceBidPriceTopPercent * outBuyoutPrice);
 
     // If variance brought price below sell price, bring it back up to avoid making money off vendoring AH items
     if (outBuyoutPrice < itemProto->SellPrice)
     {
         float minLowPriceAddVariancePercent = 1.25;
-        outBuyoutPrice = urand(itemProto->SellPrice, minLowPriceAddVariancePercent * itemProto->SellPrice);
+        outBuyoutPrice = u64Random(itemProto->SellPrice, minLowPriceAddVariancePercent * itemProto->SellPrice);
     }
 
     // Bid price can never be below sell price
