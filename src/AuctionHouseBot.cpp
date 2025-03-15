@@ -243,9 +243,11 @@ void AuctionHouseBot::calculateItemValue(ItemTemplate const* itemProto, uint64& 
         outBuyoutPrice = itemProto->SellPrice;
 
     // Calculate buyout price with a variance
-    float sellVarianceBuyoutPriceTopPercent = 1.30;
-    float sellVarianceBuyoutPriceBottomPercent = 0.70;
-    outBuyoutPrice = urand(sellVarianceBuyoutPriceBottomPercent * outBuyoutPrice, sellVarianceBuyoutPriceTopPercent * outBuyoutPrice);
+    float max = 1.30 * outBuyoutPrice;
+    float min = 0.70* outBuyoutPrice;
+
+    LOG_INFO("module", "Min Max Min={}, Max={}", min, max);
+    outBuyoutPrice = urand(min, max);
 
     // Calculate a bid price based on a variance against buyout price
     float sellVarianceBidPriceTopPercent = 1;
