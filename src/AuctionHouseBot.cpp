@@ -248,7 +248,13 @@ void AuctionHouseBot::calculateItemValue(ItemTemplate const* itemProto, uint64& 
 
     // if(min > max) {
         LOG_INFO("module", "Min Max Min={}, Max={}", min, max);
-    // }
+    }
+
+    if (debug_Out)
+    {
+        LOG_INFO("module", "Item={} Min={}, Max={}", itemProto->ItemId, min, max);
+    }
+
     outBuyoutPrice = urand(min, max);
 
     // Calculate a bid price based on a variance against buyout price
