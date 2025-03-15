@@ -32,14 +32,19 @@
 #        in a cycle will be posted by a single randomly selected bot, so Keep
 #        this value low if you want highly diverse postings
 #    Default 75
+#
+#	 AuctionHouseBot.MarketPrice
+#		Enable using market price to fluctuate prices
 ###############################################################################
 
 AuctionHouseBot.DEBUG = 0
 AuctionHouseBot.DEBUG_FILTERS = 0
 AuctionHouseBot.EnableSeller = 1
 AuctionHouseBot.EnableBuyer = 1
-AuctionHouseBot.GUIDs = 0
-AuctionHouseBot.ItemsPerCycle = 75
+AuctionHouseBot.GUIDs = 1,2
+AuctionHouseBot.ItemsPerCycle = 100
+AuctionHouseBot.MarketPrice = 1
+AuctionHouseBot.MarketResetThreshold = 25
 
 ###############################################################################
 #    AuctionHouseBot.<faction>.MinItems

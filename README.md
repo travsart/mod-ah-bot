@@ -8,6 +8,8 @@ A fork of the auction house bot for AzerothCore.  This fork gives a much more bl
 	- Empty the list to have crafted goods appear in the AH, or use other IDs you want to keep separate
  - Moved database configuration completely to config
 
+New: Added MarketPrice and MarketResetThreshold where prices will fluctuate with the market
+
 ## Installation
 
 ```

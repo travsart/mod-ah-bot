@@ -37,6 +37,8 @@ AuctionHouseBot::AuctionHouseBot()
     debug_Out_Filters = false;
     AHBSeller = false;
     AHBBuyer = false;
+    AHBMarketPrice = false;
+    MarketResetThreshold = 25;
 
     _lastrun_a = time(NULL);
     _lastrun_h = time(NULL);
@@ -49,6 +51,60 @@ AuctionHouseBot::AuctionHouseBot()
 
 AuctionHouseBot::~AuctionHouseBot()
 {
+}
+
+void AuctionHouseBot::UpdateItemStats(uint32 id, uint32 stackSize, uint64 buyout)
+{
+    if (!stackSize)
+    {
+        return;
+    }
+
+    // 
+    // Collects information about the item bought
+    //
+
+    uint32 perUnit = buyout / stackSize;
+
+    if (itemsCount.count(id) == 0)
+    {
+        itemsCount[id] = 1;
+        itemsSum[id]   = perUnit;
+        itemsPrice[id] = perUnit;
+    }
+    else
+    {
+        itemsCount[id]++;
+
+        //
+        // Reset the statistics to force adapt to the market price.
+        // Adds a little of randomness by adding/removing a range of 9 to the threshold.
+        //
+
+        if (itemsCount[id] > MarketResetThreshold + (urand(1, 19) - 10))
+        {
+            itemsCount[id] = 1;
+            itemsSum[id]   = perUnit;
+            itemsPrice[id] = perUnit;
+        }
+        else
+        {
+            //
+            // Here is decided the price for single unit:
+            // right now is a plain, boring average of the ~100 previous auctions.
+            //
+
+            itemsSum[id]   = (itemsSum[id] + perUnit);
+            itemsPrice[id] = itemsSum[id] / itemsCount[id];
+        }
+    }
+
+    if (debug_Out)
+    {
+        LOG_INFO("module", "Updating market price item={}, price={}", id, itemsPrice[id]);
+    }
+
+    // TODO Update DB
 }
 
 uint32 AuctionHouseBot::getStackSizeForItem(ItemTemplate const* itemProto) const
@@ -783,6 +839,8 @@ void AuctionHouseBot::InitializeConfiguration()
 
     AHBSeller = sConfigMgr->GetOption<bool>("AuctionHouseBot.EnableSeller", false);
     AHBBuyer = sConfigMgr->GetOption<bool>("AuctionHouseBot.EnableBuyer", false);
+    AHBMarketPrice = sConfigMgr->GetOption<bool>("AuctionHouseBot.MarketPrice", false);
+    MarketResetThreshold = sConfigMgr->GetOption<uint32>("AuctionHouseBot.MarketResetThreshold", 25);
 
     AddCharacters(sConfigMgr->GetOption<std::string>("AuctionHouseBot.GUIDs", "0"));
     if (AHCharacters.size() == 0)

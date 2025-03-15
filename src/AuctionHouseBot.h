@@ -144,6 +144,12 @@ private:
     bool AHBSeller;
     bool AHBBuyer;
 
+    bool AHBMarketPrice;
+    uint32 MarketResetThreshold;
+    std::map<uint32, uint32> itemsCount;
+    std::map<uint32, uint64> itemsSum;
+    std::map<uint32, uint64> itemsPrice;
+
     std::string AHCharactersGUIDsForQuery;
     uint32 ItemsPerCycle;
     bool DisabledItemTextFilter;
