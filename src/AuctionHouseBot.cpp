@@ -883,7 +883,7 @@ void AuctionHouseBot::Initialize()
     // Build a list of items that can be pulled from for auction
     populateItemClassProportionList();
     populateItemCandidateList();
-    initMarketObjects()
+    initMarketObjects();
 }
 
 void AuctionHouseBot::InitializeConfiguration()
