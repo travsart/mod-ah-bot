@@ -782,11 +782,11 @@ void AuctionHouseBot::addNewAuctionBuyerBotBid(Player* AHBplayer, AHBConfig *con
 
 void AuctionHouseBot::Update()
 {
-    time_t _newrun = time(NULL);
-    if ((!AHBSeller) && (!AHBBuyer))
+    if ((AHBSeller == false) && (AHBBuyer == false))
         return;
     if (AHCharacters.size() == 0)
         return;
+    time_t _newrun = time(NULL);
 
     // Randomly select the bot to load, and load it
     uint32 botIndex = urand(0, AHCharacters.size() - 1);
@@ -841,10 +841,18 @@ void AuctionHouseBot::InitializeConfiguration()
     AHBBuyer = sConfigMgr->GetOption<bool>("AuctionHouseBot.EnableBuyer", false);
     AHBMarketPrice = sConfigMgr->GetOption<bool>("AuctionHouseBot.MarketPrice", false);
     MarketResetThreshold = sConfigMgr->GetOption<uint32>("AuctionHouseBot.MarketResetThreshold", 25);
+    if (AHBSeller == false && AHBBuyer == false)
+        return;
+    string charString = sConfigMgr->GetOption<std::string>("AuctionHouseBot.GUIDs", "0");
+    if (charString == "0")
+    {
+        AHBBuyer = false;
+        AHBSeller = false;
+        LOG_INFO("module", "AuctionHouseBot: AuctionHouseBot.GUIDs is '0' so this module will be disabled");
+        return;
+    }
+    AddCharacters(charString);
 
-    AddCharacters(sConfigMgr->GetOption<std::string>("AuctionHouseBot.GUIDs", "0"));
-    if (AHCharacters.size() == 0)
-        AddCharacters(sConfigMgr->GetOption<std::string>("AuctionHouseBot.GUID", "0")); // Backwards compat
     ItemsPerCycle = sConfigMgr->GetOption<uint32>("AuctionHouseBot.ItemsPerCycle", 75);
 
     // Stack Ratios
