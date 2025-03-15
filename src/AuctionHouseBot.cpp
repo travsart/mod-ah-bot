@@ -874,7 +874,7 @@ void AuctionHouseBot::updateMarketObjects(uint32 id){
         uint64 sum = itemsSum[id];
         uint64 price = itemsPrice[id];
 
-        CharacterDatabase.Execute("UPDATE auctionhousebot_marketItems SET count = '{}', sum = '{}', price = '{}' WHERE itemId = '{}'", count, sum, price, id);
+        WorldDatabase.Execute("UPDATE auctionhousebot_marketItems SET count = '{}', sum = '{}', price = '{}' WHERE itemId = '{}'", count, sum, price, id);
     }
 }
 
