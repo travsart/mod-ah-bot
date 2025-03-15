@@ -847,7 +847,7 @@ void AuctionHouseBot::Update()
 }
 
 void AuctionHouseBot::initMarketObjects(){
-    QueryResult itemsResults = WorldDatabase.Query("SELECT itemId, count, sum, price FROM auctionhousebot_marketItems")->Fetch()->Get<uint32>()
+    QueryResult itemsResults = WorldDatabase.Query("SELECT itemId, count, sum, price FROM auctionhousebot_marketItems");
 
     if (itemsResults)
     {
