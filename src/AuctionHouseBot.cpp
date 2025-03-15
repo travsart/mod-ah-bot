@@ -246,10 +246,6 @@ void AuctionHouseBot::calculateItemValue(ItemTemplate const* itemProto, uint64& 
     float max = 1.30 * outBuyoutPrice;
     float min = 0.70* outBuyoutPrice;
 
-    // if(min > max) {
-        LOG_INFO("module", "Min Max Min={}, Max={}", min, max);
-    }
-
     if (debug_Out)
     {
         LOG_INFO("module", "Item={} Min={}, Max={}", itemProto->ItemId, min, max);
