@@ -242,10 +242,10 @@ private:
     void populateItemCandidateList();
     void addNewAuctions(Player* AHBplayer, AHBConfig *config);
     void addNewAuctionBuyerBotBid(Player* AHBplayer, AHBConfig *config);
-    uint64 AuctionHouseBot::GetItemPrice(ItemTemplate const* itemProto);
-    void AuctionHouseBot::UpdateItemStats(uint32 id, uint32 stackSize, uint64 buyout);
-    void AuctionHouseBot::initMarketObjects();
-    void AuctionHouseBot::updateMarketObjects(uint32 id);
+    uint64 GetItemPrice(ItemTemplate const* itemProto);
+    void UpdateItemStats(uint32 id, uint32 stackSize, uint64 buyout);
+    void initMarketObjects();
+    void updateMarketObjects(uint32 id);
 
     AuctionHouseBot();
 
