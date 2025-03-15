@@ -26,10 +26,14 @@
 #include "WorldSession.h"
 #include "GameTime.h"
 #include "DatabaseEnv.h"
+#include <random>
 
 #include <set>
 
 using namespace std;
+
+std::random_device rd;
+std::mt19937_64 gen(rd());
 
 AuctionHouseBot::AuctionHouseBot()
 {
@@ -51,6 +55,11 @@ AuctionHouseBot::AuctionHouseBot()
 
 AuctionHouseBot::~AuctionHouseBot()
 {
+}
+
+uint64 AuctionHouseBot::u64Random(uint64 min, uint64 max){
+    std::uniform_int_distribution<uint64> uid(min, max);
+    return uid(gen);
 }
 
 uint64 AuctionHouseBot::GetItemPrice(ItemTemplate const* itemProto)

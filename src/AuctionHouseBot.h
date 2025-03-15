@@ -246,6 +246,7 @@ private:
     void UpdateItemStats(uint32 id, uint32 stackSize, uint64 buyout);
     void initMarketObjects();
     void updateMarketObjects(uint32 id);
+    uint64 AuctionHouseBot::u64Random(uint64 min, uint64 max);
 
     AuctionHouseBot();
 
