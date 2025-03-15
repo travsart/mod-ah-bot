@@ -53,6 +53,16 @@ AuctionHouseBot::~AuctionHouseBot()
 {
 }
 
+uint64 AuctionHouseBot::GetItemPrice(ItemTemplate const* itemProto)
+{
+    if (itemsCount.count(itemProto->ItemId) != 0)
+    {
+        return itemsPrice[itemProto->ItemId];
+    }
+
+    return itemProto->SellPrice;
+}
+
 void AuctionHouseBot::UpdateItemStats(uint32 id, uint32 stackSize, uint64 buyout)
 {
     if (!stackSize)
@@ -104,7 +114,7 @@ void AuctionHouseBot::UpdateItemStats(uint32 id, uint32 stackSize, uint64 buyout
         LOG_INFO("module", "Updating market price item={}, price={}", id, itemsPrice[id]);
     }
 
-    // TODO Update DB
+    updateMarketObjects(id);
 }
 
 uint32 AuctionHouseBot::getStackSizeForItem(ItemTemplate const* itemProto) const
@@ -113,7 +123,7 @@ uint32 AuctionHouseBot::getStackSizeForItem(ItemTemplate const* itemProto) const
     if (itemProto == NULL)
         return 1;
 
-    // TODO: Move this to a config
+
     uint32 stackRatio = 0;
     switch (itemProto->Class)
     {
@@ -144,7 +154,14 @@ uint32 AuctionHouseBot::getStackSizeForItem(ItemTemplate const* itemProto) const
 void AuctionHouseBot::calculateItemValue(ItemTemplate const* itemProto, uint64& outBidPrice, uint64& outBuyoutPrice)
 {
     // Start with a buyout price related to the sell price
-    outBuyoutPrice = itemProto->SellPrice;
+
+    if(AHBMarketPrice){
+        outBuyoutPrice = GetItemPrice(itemProto);
+    }
+    else {
+        outBuyoutPrice = itemProto->SellPrice;
+    }
+    
 
     // Get the price multipliers
     float classPriceMultiplier = 1;
@@ -183,10 +200,11 @@ void AuctionHouseBot::calculateItemValue(ItemTemplate const* itemProto, uint64& 
     }
 
     // Grab the minimum prices
-    uint64 PriceMinimumCenterBase = 1000;
+    uint64 PriceMinimumCenterBase = urand(itemProto->ItemLevel, itemProto->ItemLevel + 10) * 10;
     auto it = PriceMinimumCenterBaseOverridesByItemID.find(itemProto->ItemId);
-    if (it != PriceMinimumCenterBaseOverridesByItemID.end())
+    if (it != PriceMinimumCenterBaseOverridesByItemID.end()) {
         PriceMinimumCenterBase = it->second;
+    }
     else
     {
         switch (itemProto->Class)
@@ -608,6 +626,8 @@ void AuctionHouseBot::addNewAuctions(Player* AHBplayer, AHBConfig *config)
         auctionHouse->AddAuction(auctionEntry);
         auctionEntry->SaveToDB(trans);
         CharacterDatabase.CommitTransaction(trans);
+
+        UpdateItemStats(auctionEntry->item_template, auctionEntry->itemCount, auctionEntry->buyout);
     }
 }
 
@@ -767,6 +787,7 @@ void AuctionHouseBot::addNewAuctionBuyerBotBid(Player* AHBplayer, AHBConfig *con
                 auction->bidder = AHBplayer->GetGUID();
                 auction->bid = auction->buyout;
 
+                UpdateItemStats(auction->item_template, auction->itemCount, auction->buyout);
                 // Send mails to buyer & seller
                 sAuctionMgr->SendAuctionSuccessfulMail(auction, trans);
                 sAuctionMgr->SendAuctionWonMail(auction, trans);
@@ -825,11 +846,44 @@ void AuctionHouseBot::Update()
     ObjectAccessor::RemoveObject(&_AHBplayer);
 }
 
+void AuctionHouseBot::initMarketObjects(){
+    QueryResult itemsResults = WorldDatabase.Query("SELECT itemId, count, sum, price FROM auctionhousebot_marketItems")->Fetch()->Get<uint32>()
+
+    if (itemsResults)
+    {
+        do
+        {
+            Field* fields = itemsResults->Fetch();
+            uint32 id = fields[0].Get<uint32>();
+            uint32 count = fields[1].Get<uint32>();
+            uint64 sum = fields[2].Get<uint64>();
+            uint64 price = fields[3].Get<uint64>();
+            
+            itemsCount[id] = count;
+            itemsSum[id]   = sum;
+            itemsPrice[id] = price;
+
+        } while (itemsResults->NextRow());
+    }
+}
+
+void AuctionHouseBot::updateMarketObjects(uint32 id){
+    if (itemsCount.count(id) != 0)
+    {
+        uint32 count = itemsCount[id];
+        uint64 sum = itemsSum[id];
+        uint64 price = itemsPrice[id];
+
+        CharacterDatabase.Execute("UPDATE auctionhousebot_marketItems SET count = '{}', sum = '{}' price = '{}' WHERE itemId = '{}'", count, sum, price, id);
+    }
+}
+
 void AuctionHouseBot::Initialize()
 {
     // Build a list of items that can be pulled from for auction
     populateItemClassProportionList();
     populateItemCandidateList();
+    initMarketObjects()
 }
 
 void AuctionHouseBot::InitializeConfiguration()
