@@ -263,16 +263,14 @@ void AuctionHouseBot::calculateItemValue(ItemTemplate const* itemProto, uint64& 
 
     outBuyoutPrice = u64Random(min, max);
 
-    // Calculate a bid price based on a variance against buyout price
-    float sellVarianceBidPriceTopPercent = 1;
-    float sellVarianceBidPriceBottomPercent = .75;
-    outBidPrice = u64Random(sellVarianceBidPriceBottomPercent * outBuyoutPrice, sellVarianceBidPriceTopPercent * outBuyoutPrice);
+    max = .99 * outBuyoutPrice;
+    min = 0.75 * outBuyoutPrice;
+    outBidPrice = u64Random(min, max);
 
     // If variance brought price below sell price, bring it back up to avoid making money off vendoring AH items
     if (outBuyoutPrice < itemProto->SellPrice)
     {
-        float minLowPriceAddVariancePercent = 1.25;
-        outBuyoutPrice = u64Random(itemProto->SellPrice, minLowPriceAddVariancePercent * itemProto->SellPrice);
+        outBuyoutPrice = u64Random(itemProto->SellPrice, 2.5 * itemProto->SellPrice);
     }
 
     // Bid price can never be below sell price
